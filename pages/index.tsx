@@ -6,6 +6,7 @@ import {
   Heading,
   Input,
   Text,
+  useToast,
 } from "@chakra-ui/react";
 import type { NextPage } from "next";
 import Head from "next/head";
@@ -13,12 +14,51 @@ import Image from "next/legacy/image";
 import { ChangeEvent, FormEvent, useState } from "react";
 
 const Home: NextPage = () => {
-  const [emailInput, setEmailInput] = useState<String>("");
-  const [buttonLoading, setButtonLoading] = useState<Boolean>(false);
+  const toast = useToast({
+    position: "top",
+    isClosable: true,
+  });
+
+  const [emailInput, setEmailInput] = useState("");
+  const [buttonLoading, setButtonLoading] = useState(false);
 
   const handleFormSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log(emailInput);
+    if (!emailInput) {
+      return toast({
+        description: "email required",
+        status: "error",
+      });
+    }
+
+    setButtonLoading(true);
+    try {
+      const res = await fetch("/api/subscribe", {
+        method: "POST",
+        body: JSON.stringify({ email: emailInput }),
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        toast({
+          title: "Joined successfully",
+          description: "Thank you for joining the waitlist!",
+          status: "success",
+        });
+      } else {
+        throw new Error(
+          data?.error || "something went wrong, please try again later"
+        );
+      }
+    } catch (e) {
+      toast({
+        description: (e as Error).message,
+        status: "error",
+      });
+    }
+
+    setEmailInput("");
+    setButtonLoading(false);
   };
 
   return (
@@ -48,6 +88,7 @@ const Home: NextPage = () => {
             <form onSubmit={handleFormSubmit}>
               <Flex gap={"15"}>
                 <Input
+                  value={emailInput}
                   type="email"
                   placeholder="Enter your email..."
                   onChange={(e: ChangeEvent<HTMLInputElement>) => {
@@ -55,6 +96,7 @@ const Home: NextPage = () => {
                   }}
                 />
                 <Button
+                  isLoading={buttonLoading}
                   type="submit"
                   bg={"red.400"}
                   _hover={{ bg: "orange.200" }}
