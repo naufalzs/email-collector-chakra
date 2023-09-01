@@ -83,7 +83,7 @@ const Home: NextPage = () => {
             </Heading>
             <Text my={4} fontSize={"sm"}>
               Our App will launch soon. Subscribe for updates and get pre-order
-              deals! Don't regret our deals later!!
+              deals! Don&#39;t regret our deals later!!
             </Text>
             <form onSubmit={handleFormSubmit}>
               <Flex gap={"15"}>
